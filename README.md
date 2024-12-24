@@ -34,12 +34,12 @@ Les commandes existantes sont affichées dans le node CaporalCli.js help : <node
 
 ### Options globales :
 
-**-h or --help 	   :**	  Display the program help\n
-**-V, --version    :**    Display version.\n
-**--no-color       :**    Disable use of colors in output.
+**-h or --help 	   :**	  Display the program help  
+**-V, --version    :**    Display version.  
+**--no-color       :**    Disable use of colors in output.  
 **-v, --verbose    :**    Verbose mode: will also output debug messages.        
 **--quiet          :**    Quiet mode - only displays warn and error messages.   
-**--silent         :**    Silent mode: does not output anything, giving no indication of success or failure other than the exit code.
+**--silent         :**    Silent mode: does not output anything, giving no indication of success or failure other than the exit code.  
 
 <node caporalCli.js <command> fileToParse [args] [-options]>
 
