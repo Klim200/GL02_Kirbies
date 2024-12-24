@@ -41,7 +41,7 @@ Les commandes existantes sont affichées dans le node CaporalCli.js help : <node
 **--quiet          :**    Quiet mode - only displays warn and error messages.   
 **--silent         :**    Silent mode: does not output anything, giving no indication of success or failure other than the exit code.  
 
-`node caporalCli.js <command> fileToParse [args] [-options]>`
+`node caporalCli.js <command> fileToParse [args] [-options]`
 
 ### Commandes : 
 **\<command\> : check**
