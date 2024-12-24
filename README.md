@@ -41,16 +41,16 @@ Les commandes existantes sont affichées dans le node CaporalCli.js help : <node
 **--quiet          :**    Quiet mode - only displays warn and error messages.   
 **--silent         :**    Silent mode: does not output anything, giving no indication of success or failure other than the exit code.  
 
-<node caporalCli.js <command> fileToParse [args] [-options]>
+`node caporalCli.js <command> fileToParse [args] [-options]>`
 
 ### Commandes : 
-**<command> : check**
+**\<command\> : check**
 
 Options :
 * **-t or --showTokenize :**	Display the tokenization result 
 * **-d or --showDebug    :** 	Display each step of the analysis
 
-**<command> : findCourseRooms**
+**\<command\> : findCourseRooms**
 
 Arguments :
 * **file		:**  The Cru file where you want to search (e.g. "edt.cru")
@@ -59,13 +59,13 @@ Arguments :
 Options :
 * **-c or --capacity :** Display the capacity of the rooms associated with the given course
 
-**<command> : findRomCapacity**
+**\<command\> : findRomCapacity**
 
 Arguments :
 * **file		:**   The Cru file where you want to search (e.g. "edt.cru")
 * **room		:**   The room for which you want to know the capacity (e.g. "A105")
 
-**<command> : freeSlotsForRoom**
+**\<command\> : freeSlotsForRoom**
 
 Arguments :
 * **file    :**   The Cru file where you want to search (e.g. "edt.cru")
@@ -76,14 +76,14 @@ Options :
 * **-p or --percentage :**   Shows the percentage of occupancy of the room boolean
 
 
-**<command> : findAvailableRooms**
+**\<command\> : findAvailableRooms**
 
 Arguments :
 * **file		  :**   The Cru file where you want to search (e.g. "edt.cru")
 * **day		    :**   The day when for which you want the available room. Please only give the first lette of the day, in French ("L", "MA", "ME", "J", "V", or "S") 
 * **timeSlot	:**   The time slot for which you want the available rooms. Please write it with the format HH:MM-HH:MM (e.g. "10:00-12:00)
 
-**<command> : generateCalendar**
+**\<command\> : generateCalendar**
 
 Arguments : 
 * **selectedCourses :**   Comma-separated list of course codes (e.g.,"CL02,CL07")
@@ -93,13 +93,13 @@ Arguments :
 Options : 
 * **-o or --output <file>   :**   The output file where you want to save the calendar { default : "calendar.ics" }
 
-**<command> : verifySchedule**
+**\<command\> : verifySchedule**
 
 Arguments :
 * **file		:**   The Cru file where you want to search (e.g. "edt.cru")
 
 
-**<command> : utilizedRoom**
+**\<command\> : utilizedRoom**
 
 Arguments :
 * **file  :**   The Cru file where you want to search (e.g. "edt.cru")
