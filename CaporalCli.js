@@ -208,6 +208,13 @@ cli.version("cru-parser-cli")
 
             // Get all the slots and the occupied slots
             const occupiedSlots = getOccupiedSlots(analyzer.ParsedCourse, args.room);
+
+            // Check if the room exists in the data
+            if (occupiedSlots.length === 0) {
+                logger.error(`The room "${args.room}" does not exist in the file.`);
+                return;
+            }
+
             const allSlots = generateAllSlots();
             // Calculate the free slots
             const freeSlots = allSlots.filter((slot) => !occupiedSlots.includes(slot));
@@ -264,6 +271,16 @@ cli.version("cru-parser-cli")
             logger.error("Invalid day. Please use L, MA, ME, J, V, or S");
             return;
         }
+
+        // Validate the timeSlot format
+        const timeSlotRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]-([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeSlotRegex.test(args.timeSlot)) {
+            logger.error(
+                "Invalid time slot format. Please use the format HH:MM-HH:MM (e.g., 08:00-10:00)."
+            );
+            return;
+        }
+
         // We just want the start and end hours, we're not interested in the minutes.
         let beginningTimeSlot = args.timeSlot.split("-")[0]; // We divide the argument "timeSlot" and only take the part before the "-", which is the beginning of the time slot
         let beginningToCompare = parseInt(beginningTimeSlot.split(":")[0]); // We only take what comes before the ":", which is the hour
@@ -357,7 +374,19 @@ cli.version("cru-parser-cli")
     .argument("<startDate>", "The start date in YYYY-MM-DD format")
     .argument("<endDate>", "The end date in YYYY-MM-DD format")
     .option("-o, --output <file>", "The output file", { default: "calendar.ics" })
-    .action(({ args, options, logger }) => {
+    .action(async({ args, options, logger }) => {
+
+        // Check if the user has the permission to run this command
+        const username = await promptUserForName();
+        const hasPermission = checkPermission(username, users, roles.student) || checkPermission(username, users, roles.teacher);
+        
+        if (!hasPermission) {
+            logger.error("Access denied. This command is restricted to teacher or student.");
+            return;
+        }
+        
+        logger.info("Access granted. Here are the parsed courses:");
+
         fs.readFile(args.file, "utf8", function (err, data) {
             var analyzer = new CruParser();
             analyzer.parse(data);
@@ -416,44 +445,51 @@ cli.version("cru-parser-cli")
             analyzer.parse(data);
 
             if (analyzer.errorCount === 0) {
-                let overlaps = []; // List to stock the overlapping courses
+                let overlaps = []; // Liste pour stocker les cours qui se chevauchent
 
-                // Group the time slots by room
+                // Regrouper les créneaux horaires par salle
                 let roomSchedules = {};
+
                 analyzer.ParsedCourse.forEach((course) => {
                     course.timeSlots.forEach((slot) => {
                         if (!roomSchedules[slot.salle]) {
-                            // Is the room is not aleady in the list
-                            roomSchedules[slot.salle] = []; // we create a list corresponding to its name
+                            // Si la salle n'est pas encore dans la liste
+                            roomSchedules[slot.salle] = []; // On crée une liste pour cette salle
                         }
                         roomSchedules[slot.salle].push({
-                            // In the list of the room, we add the course code, the time slot and the day when the room is occupied
+                            // Ajouter les informations du cours, créneau horaire et jour
                             course: course.courseCode,
-                            start: slot.horaire.split(" ")[1].split("-")[0],
-                            end: slot.horaire.split(" ")[1].split("-")[1],
+                            start: parseTime(slot.horaire.split(" ")[1].split("-")[0]), // Convertir en nombre
+                            end: parseTime(slot.horaire.split(" ")[1].split("-")[1]), // Convertir en nombre
                             day: slot.horaire.split(" ")[0],
                         });
                     });
                 });
 
-                // Verify the overlapping for each rooms
+                // Fonction pour convertir l'heure en nombre (ex. "14:00" -> 14.00)
+                function parseTime(timeStr) {
+                    const [hours, minutes] = timeStr.split(":");
+                    return parseFloat(`${hours}.${minutes}`);
+                }
+
+                // Vérifier les chevauchements pour chaque salle
                 for (let room in roomSchedules) {
                     let schedule = roomSchedules[room];
 
-                    // Sort by day and start time
+                    // Trier les créneaux horaires par jour et heure de début
                     schedule.sort((a, b) => {
                         if (a.day !== b.day) {
-                            return a.day.localeCompare(b.day);
+                            return a.day.localeCompare(b.day); // Trier par jour
                         }
-                        return a.start.localeCompare(b.start);
+                        return a.start - b.start; // Trier par heure de début
                     });
 
-                    // Compare slots to detect overlaps
+                    // Comparer les créneaux horaires pour détecter les chevauchements
                     for (let i = 0; i < schedule.length - 1; i++) {
                         let current = schedule[i];
                         let next = schedule[i + 1];
 
-                        // Verify if the time slots are overlapping on the same day
+                        // Vérifier si les créneaux horaires se chevauchent le même jour
                         if (current.day === next.day && current.end > next.start) {
                             overlaps.push({
                                 room,
@@ -465,18 +501,19 @@ cli.version("cru-parser-cli")
                     }
                 }
 
-                // Display the results
+                // Afficher les résultats
                 if (overlaps.length > 0) {
                     logger.warn("Overlapping courses detected:");
                     overlaps.forEach((overlap) => {
                         logger.info(`Room: ${overlap.room}`);
                         console.log(`Day: ${dayOfTheWeek[overlap.day]}`);
                         console.log(`Courses: ${overlap.courses.join(", ")}`);
-                        console.log(`Time: ${overlap.times[0]}`);
+                        console.log(`Times: ${overlap.times.join(" and ")}`);
                     });
-                } else {
+                }else {
                     logger.info("No overlapping courses detected. The schedule is valid.");
                 }
+
             } else {
                 logger.error("The .cru file contains errors. Unable to verify schedule.");
             }
