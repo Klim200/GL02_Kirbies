@@ -1,10 +1,12 @@
-// Description : This file is the main file of the CLI. It contains the commands and the logic to run them
+/// Description : This file is the main file of the CLI. It contains the commands and the logic to run them
 
 // Import neccessary modules
 const fs = require("fs");
 const CruParser = require("./CruParser.js");
 const color = require("colors");
 const cli = require("@caporal/core").default;
+const open = require("open");
+
 
 // Import the functions to generate the ICS file
 const { getStudentSchedule, generateICSFile } = require("./GenerateICS");
@@ -13,10 +15,11 @@ const { getStudentSchedule, generateICSFile } = require("./GenerateICS");
 const { generateChart } = require("./GeneratePieChart.js");
 
 // Import the functions to manage users and permissions
-const { roles, users, checkPermission, promptUserForName } = require("./userManager.js");
+const { roles, users, checkPermission, promptUserForName, promptUserForPassword } = require("./userManager.js");
 
 // Import the functions to manage the free slots for a room
 const { dayOfTheWeek, getOccupiedSlots, generateAllSlots } = require("./slotManager.js");
+
 
 // Create the CLI wich will be used to run the commands
 cli.version("cru-parser-cli")
@@ -35,7 +38,8 @@ cli.version("cru-parser-cli")
     .argument("<file>", "The file to check with Cru parser")
     .option("-t, --showTokenize", "log the tokenization results", { validator: cli.BOOLEAN, default: false })
     .option("-d, --showDebug", "log the debug information", { validator: cli.BOOLEAN, default: false })
-    .action(({ args, options, logger }) => {
+    .action(async ({args, options, logger}) => {
+
         fs.readFile(args.file, "utf8", function (err, data) {
             if (err) {
                 return logger.warn(err);
@@ -94,7 +98,18 @@ cli.version("cru-parser-cli")
     .argument("<file>", "The Cru file to search")
     .argument("<course>", "The course you want to search")
     .option("-c, --capacity", "Shows capacity of the room(s)", { validator: cli.BOOLEAN, default: false })
-    .action(({ args, options, logger }) => {
+    .action(async ({args, options, logger}) => {
+        // Check if the user has the permission to run this command
+        const username = await promptUserForName();
+        const password = await promptUserForPassword()
+        const hasPermission = checkPermission(username, users, roles.student, password) || checkPermission(username, users, roles.teacher, password);
+
+        if (!hasPermission) {
+            logger.error("Access denied. This command is restricted to teacher or student.");
+            return;
+        }
+
+        logger.info("Access granted. Here are the parsed courses:");
         fs.readFile(args.file, "utf8", function (err, data) {
             if (err) {
                 return logger.warn(err);
@@ -120,7 +135,7 @@ cli.version("cru-parser-cli")
                             if (capacity > capacityMax)
                                 capacityMax = capacity
                             console.log(`  Capacity: ${capacityMax}`);
-                            
+
                         }
                     });
                 } else {
@@ -144,7 +159,18 @@ cli.version("cru-parser-cli")
     .command("findRoomCapacity", "Looks for the capacity of a given room")
     .argument("<file>", "The Cru file to search")
     .argument("<room>", "The room you want to search")
-    .action(({ args, logger }) => {
+    .action(async ({args, logger}) => {
+        // Check if the user has the permission to run this command
+        const username = await promptUserForName();
+        const password = await promptUserForPassword();
+        const hasPermission = checkPermission(username, users, roles.student, password) || checkPermission(username, users, roles.teacher, password);
+
+        if (!hasPermission) {
+            logger.error("Access denied. This command is restricted to teacher or student.");
+            return;
+        }
+
+        logger.info("Access granted. Here are the parsed courses:");
         fs.readFile(args.file, "utf8", function (err, data) {
             if (err) {
                 return logger.warn(err);
@@ -198,6 +224,17 @@ cli.version("cru-parser-cli")
         default: false,
     })
     .action(async ({ args, options, logger }) => {
+        // Check if the user has the permission to run this command
+        const username = await promptUserForName();
+        const password = await promptUserForPassword();
+        const hasPermission = checkPermission(username, users, roles.student, password) || checkPermission(username, users, roles.teacher, password);
+
+        if (!hasPermission) {
+            logger.error("Access denied. This command is restricted to teacher or student.");
+            return;
+        }
+
+        logger.info("Access granted. Here are the parsed courses:");
         fs.readFile(args.file, "utf8", async function (err, data) {
             if (err) {
                 return logger.warn(err);
@@ -221,7 +258,7 @@ cli.version("cru-parser-cli")
 
             // Display the results
             logger.info(`Slots for room ${args.room}:`);
-            
+
             if (freeSlots.length > 0) {
                 logger.info("Free time slots:");
                 freeSlots.forEach((slot) => console.log(`- ${slot}`));
@@ -265,7 +302,18 @@ cli.version("cru-parser-cli")
     .argument("<day>", "The day you want to know the available rooms (L, MA, ME, J, V, or S)")
     .argument("<timeSlot>", "The time slot you want to search (e.g., 08:00-10:00)")
     .option("-o, --showOccupiedRooms", "Show the occupied rooms", { validator: cli.BOOLEAN, default: false })
-    .action(({ args, options, logger }) => {
+    .action(async ({args, options, logger}) => {
+        // Check if the user has the permission to run this command
+        const username = await promptUserForName();
+        const password = await promptUserForPassword();
+        const hasPermission = checkPermission(username, users, roles.student, password) || checkPermission(username, users, roles.teacher, password);
+
+        if (!hasPermission) {
+            logger.error("Access denied. This command is restricted to teacher or student.");
+            return;
+        }
+
+        logger.info("Access granted. Here are the parsed courses:");
         // Check if the day is valid
         if (!Object.keys(dayOfTheWeek).includes(args.day)) {
             logger.error("Invalid day. Please use L, MA, ME, J, V, or S");
@@ -378,13 +426,14 @@ cli.version("cru-parser-cli")
 
         // Check if the user has the permission to run this command
         const username = await promptUserForName();
-        const hasPermission = checkPermission(username, users, roles.student) || checkPermission(username, users, roles.teacher);
-        
+        const password = await promptUserForPassword();
+        const hasPermission = checkPermission(username, users, roles.student, password) || checkPermission(username, users, roles.teacher, password);
+
         if (!hasPermission) {
             logger.error("Access denied. This command is restricted to teacher or student.");
             return;
         }
-        
+
         logger.info("Access granted. Here are the parsed courses:");
 
         fs.readFile(args.file, "utf8", function (err, data) {
@@ -426,7 +475,8 @@ cli.version("cru-parser-cli")
     .action(async ({ args, logger }) => {
         // Check if the user has the permission to run this command
         const username = await promptUserForName();
-        const hasPermission = checkPermission(username, users, roles.admin);
+        const password = await promptUserForPassword();
+        const hasPermission = checkPermission(username, users, roles.admin, password);
 
         if (!hasPermission) {
             logger.error("Access denied. This command is restricted to admins.");
@@ -536,7 +586,8 @@ cli.version("cru-parser-cli")
     .action(async ({ args, options, logger }) => {
         // Check if the user has the permission to run this command
         const username = await promptUserForName();
-        const hasPermission = checkPermission(username, users, roles.admin);
+        const password = await promptUserForPassword();
+        const hasPermission = checkPermission(username, users, roles.admin, password);
 
         if (!hasPermission) {
             logger.error("Access denied. This command is restricted to admins.");
@@ -594,7 +645,9 @@ cli.version("cru-parser-cli")
 
                     if (options.pieChart) {
                         const chartUrl = generateChart(data.room, data.occupiedCount, data.totalSlots);
-                        logger.info(`Chart URL: ${chartUrl}`);
+                        open(chartUrl);
+
+
                     }
 
                     console.log("----------------------------");
