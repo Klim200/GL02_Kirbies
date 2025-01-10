@@ -16,35 +16,25 @@ const generateChart = (room, occupiedCount, totalSlots) => {
             }]
         },
         options: {
-            plugins: {
                 title: {
                     display: true, // Assure que le titre est activé
-                    text: `Occupancy for Room: `, // Texte du titre
-                    font: {
-                        size: 18, // Taille du titre
-                        weight: 'bold', // Met le texte en gras
-                        family: 'Arial', // Police de caractères (optionnelle)
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 10,
-                    },
-                    color: '#333333', // Couleur du texte
+                    text: `Occupancy of Room ${room}`, // Texte du titre
                 },
                 legend: {
                     display: true, // Affiche la légende si besoin
                     position: 'bottom', // Position de la légende
-                
+
                 },
                 tooltip: {
                     callbacks: {
                         label: (context) => `${context.label}: ${context.raw.toFixed(2)}%`
                     }
                 }
-            }
+
         }
     });
-    chart.setWidth(400).setHeight(400);
+    chart.setWidth(300).setHeight(300);
+
     return chart.getUrl(); // Retourne l'URL du graphique
 };
 
