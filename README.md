@@ -110,6 +110,9 @@ Options :
 
 ## IV. Version : 
 
+**1.01**
+* Traitement de 8 issues ( 5 de type Bugs et 3 de type Enhancement). 
+
 **0.10**
 * Ajout de la SPEC 7 via la commande de la SPEC 3 qui permet d'afficher le taux d'occupation d'une salle
 * Update des authentifications sur les SPEC concernées
