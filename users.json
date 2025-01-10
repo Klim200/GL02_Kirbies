@@ -1,6 +1,5 @@
 [
-    { "name": "Alice", "role": "student" },
-    { "name": "Prof. John", "role": "teacher" },
-    { "name": "Admin", "role": "admin" }
+    { "name": "Alice", "password":"alice", "role": "student" },
+    { "name": "Prof. John", "password": "john", "role": "teacher" },
+    { "name": "Admin", "password":  "admin", "role": "admin" }
   ]
-  
