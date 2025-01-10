@@ -14,6 +14,7 @@ Les dépendances du projet sont :
 * "ics": "^3.8.1"
 * "punycode": "^2.3.1"
 * "quickchart-js": "^3.1.3"
+* "open": "^8.4.2"
 
 Pour vérifier que le projet est correctement installé, une page d’aide sur le logiciel devrait apparaître avec la commande :
 <node CaporalCli.js --help>
@@ -111,7 +112,7 @@ Options :
 ## IV. Version : 
 
 **1.01**
-* Traitement de 8 issues ( 5 de type Bugs et 3 de type Enhancement).
+* Traitement de 9 issues ( 6 de type Bugs et 3 de type Enhancement).
 * Creation d'un guide de demarrage utilisateur.
 * Creation d'un guide destiné aux developpeurs.
 
