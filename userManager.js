@@ -22,8 +22,8 @@ function loadUsers(filePath) {
 }
 
 // Identifie un utilisateur par son nom
-function identifyUser(userName) {
-    const user = users.find(u => u.name === userName);
+function identifyUser(userName, password) {
+    const user = users.find(u => (u.name === userName && u.password === password));
     if (user) {
         return roles[user.role];
     } else {
@@ -32,8 +32,8 @@ function identifyUser(userName) {
 }
 
 // Vérifie si un utilisateur a la permission d'exécuter une commande
-function checkPermission(userName, users, requiredRole) {
-    const userRole = identifyUser(userName, users);
+function checkPermission(userName, users, requiredRole, password) {
+    const userRole = identifyUser(userName, password);
     if (userRole === null) {
         return false;
     }
@@ -55,9 +55,26 @@ function promptUserForName() {
     });
 }
 
+
+// Demande à l'utilisateur de saisir son nom
+function promptUserForPassword() {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise((resolve) => {
+        rl.question("This command is restricted \n Please enter your password: ", (answer) => {
+            rl.close();
+            resolve(answer);
+        });
+    });
+}
+
 module.exports = {
     roles,
     users,
     checkPermission,
     promptUserForName,
+    promptUserForPassword
 };
